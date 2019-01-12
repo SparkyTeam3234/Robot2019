@@ -18,7 +18,7 @@
 #include <frc/Joystick.h>
 #include <frc/Timer.h>
 #include <wpi/raw_ostream.h>
-
+#include <ctre/Phoenix.h>
 
 class Robot : public frc::TimedRobot {
  public:
@@ -29,18 +29,24 @@ class Robot : public frc::TimedRobot {
   void TeleopInit() override;
   void TeleopPeriodic() override;
   void TestPeriodic() override;
+  void ArcadeDrive();
   //Joysticks
-  frc::Joystick *driveStick;
+  frc::Joystick *driveStickLeft;
+  frc::Joystick *driveStickRight;
   //Drive Motor Controllers
-  frc::Spark m_left_front{2};
-  frc::Spark m_left_back{3};
-  frc::Spark m_right_front{1};
-  frc::Spark m_right_back{0};
-  //Drive Motor Controller Groups
-  frc::SpeedControllerGroup m_left{m_left_front,m_left_back};
-  frc::SpeedControllerGroup m_right{m_right_front,m_right_back};
+  TalonSRX srx_left{0};
+  TalonSRX srx_right{1};
   
-  frc::DifferentialDrive m_drive{m_left,m_right};
+  //frc::Spark m_left_front{2};
+  //frc::Spark m_left_back{3};
+  //frc::Spark m_right_front{1};
+  //frc::Spark m_right_back{0};
+  
+  //Drive Motor Controller Groups
+  //frc::SpeedControllerGroup m_left{m_left_front,m_left_back};
+  //frc::SpeedControllerGroup m_right{m_right_front,m_right_back};
+  
+  //frc::DifferentialDrive m_drive{m_left,m_right};
 
  private:
   

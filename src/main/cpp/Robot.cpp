@@ -18,10 +18,16 @@
 #include <frc/Joystick.h>
 #include <frc/Timer.h>
 #include <wpi/raw_ostream.h>
+#include <ctre/Phoenix.h>
+#include <algorithm>
+#include <cmath>
 
 
 void Robot::RobotInit() {
-  driveStick=new frc::Joystick(0);
+  driveStickLeft=new frc::Joystick(0);
+  driveStickRight=new frc::Joystick(1);
+  srx_left.Set(ControlMode::PercentOutput, 0);
+  srx_right.Set(ControlMode::PercentOutput, 0);
 #if defined(__linux__)
     frc::CameraServer::GetInstance()->StartAutomaticCapture();
 #else
@@ -58,7 +64,7 @@ void Robot::AutonomousInit()
 
 void Robot::AutonomousPeriodic() 
 {
-  m_drive.ArcadeDrive(driveStick->GetY(), driveStick->GetX());
+  //m_drive.ArcadeDrive(driveStick->GetY(), driveStick->GetX());
 }
 
 void Robot::TeleopInit() 
@@ -68,7 +74,10 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic() 
 {
-  m_drive.ArcadeDrive(driveStick->GetY(), driveStick->GetX());
+  //m_drive.ArcadeDrive(driveStick->GetY(), driveStick->GetX());
+  srx_left.Set(ControlMode::PercentOutput, driveStickLeft->GetY());
+  srx_right.Set(ControlMode::PercentOutput, driveStickRight->GetY());
+  
 }
 
 void Robot::TestPeriodic() {}
