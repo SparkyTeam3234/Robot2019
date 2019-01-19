@@ -20,8 +20,8 @@
 #include <frc/encoder.h>
 #include <wpi/raw_ostream.h>
 #include <ctre/Phoenix.h>
-//#include "TPixy.h"
-//#include "Pixy2I2C.h"
+#include "TPixy.h"
+#include "PixyI2C.h"
 #include "AutonomousMode.h"
 
 class Robot : public frc::TimedRobot {
@@ -52,7 +52,7 @@ class Robot : public frc::TimedRobot {
   //frc::SpeedControllerGroup m_right{m_right_front,m_right_back};
   
   //frc::DifferentialDrive m_drive{m_left,m_right};
-  //TPixy<Pixy2I2C> pixy;
+  TPixy<LinkI2C> pixy;
   
   //Encoders
   //frc::Encoders left_enc{0,1};

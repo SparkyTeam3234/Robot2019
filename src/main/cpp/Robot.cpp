@@ -25,7 +25,7 @@
 #include "AutonomousMode.h"
 #include "AutoTest.h"
 #include <cmath>
-//#include "TPixy.h"
+#include "TPixy.h"
 
 
 
