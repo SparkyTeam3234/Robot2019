@@ -17,8 +17,12 @@
 #include <frc/SpeedControllerGroup.h>
 #include <frc/Joystick.h>
 #include <frc/Timer.h>
+#include <frc/encoder.h>
 #include <wpi/raw_ostream.h>
 #include <ctre/Phoenix.h>
+//#include "TPixy.h"
+//#include "Pixy2I2C.h"
+#include "AutonomousMode.h"
 
 class Robot : public frc::TimedRobot {
  public:
@@ -37,6 +41,7 @@ class Robot : public frc::TimedRobot {
   TalonSRX srx_left{0};
   TalonSRX srx_right{1};
   
+  AutonomousMode *autoMode=0;
   //frc::Spark m_left_front{2};
   //frc::Spark m_left_back{3};
   //frc::Spark m_right_front{1};
@@ -47,7 +52,11 @@ class Robot : public frc::TimedRobot {
   //frc::SpeedControllerGroup m_right{m_right_front,m_right_back};
   
   //frc::DifferentialDrive m_drive{m_left,m_right};
-
+  //TPixy<Pixy2I2C> pixy;
+  
+  //Encoders
+  //frc::Encoders left_enc{0,1};
+  //frc::Encoders right_enc{2,3};
  private:
   
 };

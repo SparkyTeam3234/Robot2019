@@ -19,13 +19,20 @@
 #include <frc/Timer.h>
 #include <wpi/raw_ostream.h>
 #include <ctre/Phoenix.h>
+#include <frc/encoder.h>
+#include <frc/SmartDashboard/SmartDashboard.h>
 #include <algorithm>
+#include "AutonomousMode.h"
+#include "AutoTest.h"
 #include <cmath>
+//#include "TPixy.h"
+
 
 
 void Robot::RobotInit() {
   driveStickLeft=new frc::Joystick(0);
   driveStickRight=new frc::Joystick(1);
+  srx_left.SetInverted(false);
   srx_left.Set(ControlMode::PercentOutput, 0);
   srx_right.Set(ControlMode::PercentOutput, 0);
 #if defined(__linux__)
@@ -59,25 +66,58 @@ void Robot::RobotPeriodic() {}
  */
 void Robot::AutonomousInit() 
 {
-  
+  srx_left.GetSensorCollection().SetQuadraturePosition(0);
+  srx_right.GetSensorCollection().SetQuadraturePosition(0);
 }
 
 void Robot::AutonomousPeriodic() 
 {
-  //m_drive.ArcadeDrive(driveStick->GetY(), driveStick->GetX());
+  TeleopPeriodic();
 }
 
 void Robot::TeleopInit() 
 {
-
+  
 }
 
 void Robot::TeleopPeriodic() 
 {
-  //m_drive.ArcadeDrive(driveStick->GetY(), driveStick->GetX());
-  srx_left.Set(ControlMode::PercentOutput, driveStickLeft->GetY());
-  srx_right.Set(ControlMode::PercentOutput, driveStickRight->GetY());
-  
+  if (autoMode) {
+    wpi::errs() << "Truth.\n";
+    wpi::errs().flush();
+    autoMode->run(srx_left,srx_right);
+    if (autoMode->isDone()) {
+      autoMode->end(srx_left,srx_right);
+      delete autoMode;
+      autoMode=0;
+    }
+    else if (driveStickLeft->GetTrigger()) {
+      autoMode->forceEnd(srx_left,srx_right);
+      delete autoMode;
+      autoMode=0;
+    }
+  }
+  else {
+    //m_drive.ArcadeDrive(driveStick->GetY(), driveStick->GetX());
+    srx_left.Set(ControlMode::PercentOutput, driveStickLeft->GetY()*std::abs(driveStickLeft->GetY()));
+    srx_right.Set(ControlMode::PercentOutput, driveStickRight->GetY()*std::abs(driveStickRight->GetY()));
+
+    if (driveStickRight->GetTrigger()) {
+      srx_left.GetSensorCollection().SetQuadraturePosition(0);
+      srx_right.GetSensorCollection().SetQuadraturePosition(0);
+    }
+
+    if (driveStickLeft->GetRawButton(2)) {
+      try {
+        autoMode=new AutoTest;
+      } catch (std::bad_alloc e) {
+        wpi::errs() << "Bad Allocation of Autonomous Mode.\n";
+        wpi::errs().flush();
+      }
+    }
+  }
+  frc::SmartDashboard::PutNumber("Left",srx_left.GetSensorCollection().GetQuadraturePosition());
+  frc::SmartDashboard::PutNumber("Right",srx_right.GetSensorCollection().GetQuadraturePosition());
 }
 
 void Robot::TestPeriodic() {}
