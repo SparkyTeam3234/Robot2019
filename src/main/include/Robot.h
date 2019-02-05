@@ -20,9 +20,12 @@
 #include <frc/encoder.h>
 #include <wpi/raw_ostream.h>
 #include <ctre/Phoenix.h>
-#include "TPixy.h"
-#include "PixyI2C.h"
+#include "TPixy2.h"
+#include "Pixy2I2C.h"
 #include "AutonomousMode.h"
+#include <thread>
+#include <frc/AnalogInput.h>
+#include "rev/CANSparkMax.h"
 
 class Robot : public frc::TimedRobot {
  public:
@@ -32,16 +35,24 @@ class Robot : public frc::TimedRobot {
   void AutonomousPeriodic() override;
   void TeleopInit() override;
   void TeleopPeriodic() override;
+  void DisabledInit() override;
+  void DisabledPeriodic() override;
   void TestPeriodic() override;
   void ArcadeDrive();
   //Joysticks
   frc::Joystick *driveStickLeft;
   frc::Joystick *driveStickRight;
+  frc::Joystick *otherStick;
+  //
+  frc::AnalogInput *ultra;
   //Drive Motor Controllers
   TalonSRX srx_left{0};
   TalonSRX srx_right{1};
+  rev::CANSparkMax m_neo{2, rev::CANSparkMax::MotorType::kBrushless};
   
   AutonomousMode *autoMode=0;
+  
+  rev::CANEncoder m_encoder = m_neo.GetEncoder();
   //frc::Spark m_left_front{2};
   //frc::Spark m_left_back{3};
   //frc::Spark m_right_front{1};
@@ -52,8 +63,10 @@ class Robot : public frc::TimedRobot {
   //frc::SpeedControllerGroup m_right{m_right_front,m_right_back};
   
   //frc::DifferentialDrive m_drive{m_left,m_right};
-  TPixy<LinkI2C> pixy;
-  
+  TPixy2<Link2I2C> pixy;
+  //std::thread pixythread;
+  frc::AnalogInput *rangeright;
+  frc::AnalogInput *rangeleft;
   //Encoders
   //frc::Encoders left_enc{0,1};
   //frc::Encoders right_enc{2,3};

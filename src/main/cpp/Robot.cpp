@@ -25,23 +25,35 @@
 #include "AutonomousMode.h"
 #include "AutoTest.h"
 #include <cmath>
-#include "TPixy.h"
-
-
+#include "TPixy2.h"
+#include <thread>
+#include <frc/AnalogInput.h>
+#include "rev/CANSparkMax.h"
 
 void Robot::RobotInit() {
   driveStickLeft=new frc::Joystick(0);
   driveStickRight=new frc::Joystick(1);
+  otherStick=new frc::Joystick(2);
+  //ultra=new frc::AnalogInput(0);
+  rangeright = new frc::AnalogInput(0);
+  rangeleft = new frc::AnalogInput(1);
+  //
   srx_left.SetInverted(false);
   srx_left.Set(ControlMode::PercentOutput, 0);
   srx_right.Set(ControlMode::PercentOutput, 0);
 #if defined(__linux__)
-    frc::CameraServer::GetInstance()->StartAutomaticCapture();
+    //frc::CameraServer::GetInstance()->StartAutomaticCapture();
 #else
     wpi::errs() << "Vision only available on Linux.\n";
     wpi::errs().flush();
 #endif
+    wpi::errs() << "Pixy Init\n";
+    pixy.init();
+    pixy.setLamp(0,0);
+    //pixythread = std::thread(DoPixy,pixy);
+    //pixythread.detach();
 }
+
 
 /**
  * This function is called every robot packet, no matter the mode. Use
@@ -77,14 +89,12 @@ void Robot::AutonomousPeriodic()
 
 void Robot::TeleopInit() 
 {
-  
+
 }
 
 void Robot::TeleopPeriodic() 
 {
   if (autoMode) {
-    wpi::errs() << "Truth.\n";
-    wpi::errs().flush();
     autoMode->run(srx_left,srx_right);
     if (autoMode->isDone()) {
       autoMode->end(srx_left,srx_right);
@@ -101,6 +111,25 @@ void Robot::TeleopPeriodic()
     //m_drive.ArcadeDrive(driveStick->GetY(), driveStick->GetX());
     srx_left.Set(ControlMode::PercentOutput, driveStickLeft->GetY()*std::abs(driveStickLeft->GetY()));
     srx_right.Set(ControlMode::PercentOutput, driveStickRight->GetY()*std::abs(driveStickRight->GetY()));
+    
+    m_neo.Set(driveStickLeft->GetX());
+
+    //pixy.setServos((u_int16_t) ((-otherStick->GetZ()+1.0)*500.0),(u_int16_t) ((-otherStick->GetY()+1.0)*500.0));
+    //wpi::errs() << "Pixy Feature Call\n";
+    int8_t featureResult = pixy.line.getMainFeatures(LINE_VECTOR, false);
+    //wpi::errs() << "Pixy Return " << (uint16_t)featureResult << "\n";
+    //pixy.line.getMainFeatures(LINE_VECTOR);
+    /* for (uint16_t i=0;i<pixy.line.numVectors;i++) {
+      Vector v=pixy.line.vectors[i];
+      wpi::errs() << (uint16_t) v.m_x0 << ", " << (uint16_t) v.m_y0 << "; " << (uint16_t) v.m_x1 << ", " << (uint16_t) v.m_y1 << "\n";
+    } */
+
+    /*
+    pixy.ccc.getBlocks(false,true,255);
+    for (int i=0;i<pixy.ccc.numBlocks;i++) {
+      wpi::errs() << "Found " << pixy.ccc.blocks[i].m_x << ", " << pixy.ccc.blocks[i].m_y;
+    }
+    */
 
     if (driveStickRight->GetTrigger()) {
       srx_left.GetSensorCollection().SetQuadraturePosition(0);
@@ -118,6 +147,20 @@ void Robot::TeleopPeriodic()
   }
   frc::SmartDashboard::PutNumber("Left",srx_left.GetSensorCollection().GetQuadraturePosition());
   frc::SmartDashboard::PutNumber("Right",srx_right.GetSensorCollection().GetQuadraturePosition());
+  frc::SmartDashboard::PutNumber("Left Range",rangeleft->GetVoltage());
+  frc::SmartDashboard::PutNumber("Right Range",rangeright->GetVoltage());
+  frc::SmartDashboard::PutNumber("Encoder Position", m_neo.GetEncoder().GetPosition());
+  frc::SmartDashboard::PutNumber("Encoder Velocity", m_neo.GetEncoder().GetVelocity());
+}
+
+void Robot::DisabledInit() 
+{
+  
+}
+
+void Robot::DisabledPeriodic() 
+{
+  
 }
 
 void Robot::TestPeriodic() {}
