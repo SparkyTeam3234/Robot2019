@@ -18,6 +18,7 @@
 #include <frc/Joystick.h>
 #include <frc/Timer.h>
 #include <frc/encoder.h>
+#include <frc/DigitalInput.h>
 #include <wpi/raw_ostream.h>
 #include <ctre/Phoenix.h>
 #include "TPixy2.h"
@@ -26,6 +27,7 @@
 #include <thread>
 #include <frc/AnalogInput.h>
 #include "rev/CANSparkMax.h"
+#include "Motion.h"
 
 class Robot : public frc::TimedRobot {
  public:
@@ -39,37 +41,51 @@ class Robot : public frc::TimedRobot {
   void DisabledPeriodic() override;
   void TestPeriodic() override;
   void ArcadeDrive();
+  void EncoderSave();
+  void EncoderLoad();
   //Joysticks
   frc::Joystick *driveStickLeft;
   frc::Joystick *driveStickRight;
   frc::Joystick *otherStick;
+  frc::Joystick *auxStick;
   //
   frc::AnalogInput *ultra;
-  //Drive Motor Controllers
-  TalonSRX srx_left{0};
-  TalonSRX srx_right{1};
-  rev::CANSparkMax m_neo{2, rev::CANSparkMax::MotorType::kBrushless};
-  
+  Motion m_leftDriveMotion{0.02};
+  Motion m_rightDriveMotion{0.02};
+  Motion m_actuatorMotion{0.2};
+  Motion m_liftMotion{0.2};
+  //Wheel Left
+  VictorSPX srx_wheel_left{1};
+  //Drive Left Motor Controllers
+  TalonSRX srx_left{2};
+  TalonSRX srx_left2{3};
+  //Motor 2
+  rev::CANSparkMax m_tilt{7, rev::CANSparkMax::MotorType::kBrushed};
+  rev::CANSparkMax m_lift{5, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_lift2{6, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_actuator{11, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_carriage{4, rev::CANSparkMax::MotorType::kBrushless};
+  //Drive Right Motor Controllers
+  TalonSRX srx_right{8};
+  TalonSRX srx_right2{9};
+  //Wheel Right
+  VictorSPX srx_wheel_right{10};
+
+  frc::DigitalInput m_limit{0};
+
   AutonomousMode *autoMode=0;
   
-  rev::CANEncoder m_encoder = m_neo.GetEncoder();
-  //frc::Spark m_left_front{2};
-  //frc::Spark m_left_back{3};
-  //frc::Spark m_right_front{1};
-  //frc::Spark m_right_back{0};
+  rev::CANEncoder m_encoder_tilt = m_tilt.GetEncoder();
+  rev::CANEncoder m_encoder_lift = m_lift.GetEncoder();
+  rev::CANEncoder m_encoder_lift2 = m_lift2.GetEncoder();
+  rev::CANEncoder m_encoder_actuator = m_actuator.GetEncoder();
+  rev::CANEncoder m_encoder_carriage = m_carriage.GetEncoder();
   
-  //Drive Motor Controller Groups
-  //frc::SpeedControllerGroup m_left{m_left_front,m_left_back};
-  //frc::SpeedControllerGroup m_right{m_right_front,m_right_back};
-  
-  //frc::DifferentialDrive m_drive{m_left,m_right};
   TPixy2<Link2I2C> pixy;
-  //std::thread pixythread;
   frc::AnalogInput *rangeright;
   frc::AnalogInput *rangeleft;
-  //Encoders
-  //frc::Encoders left_enc{0,1};
-  //frc::Encoders right_enc{2,3};
  private:
-  
+  bool tryLines;
+  bool SandstormTele=true;
+  int autonum=0;
 };

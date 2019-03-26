@@ -85,6 +85,7 @@ public:
   ~TPixy2(); 
 
   int8_t init(uint32_t arg=PIXY_DEFAULT_ARGVAL);
+  int8_t reset(bool doInit=false);
 
   int8_t getVersion();
   int8_t changeProg(const char *prog);
@@ -176,7 +177,7 @@ template <class LinkType> int8_t TPixy2<LinkType>::init(uint32_t arg)
 	  {
       getResolution(); // get resolution so we have it
       wpi::errs() << "Init:Pixy Ready\n";
-  return PIXY_RESULT_OK;
+      return PIXY_RESULT_OK;
     }
     delayMicroseconds(5000); // delay for sync
   }
@@ -185,6 +186,18 @@ template <class LinkType> int8_t TPixy2<LinkType>::init(uint32_t arg)
   return PIXY_RESULT_TIMEOUT;
 }
 
+template <class LinkType> int8_t TPixy2<LinkType>::reset(bool doInit)
+{
+  m_link.close();
+  if (doInit)
+  {
+    init();
+  }
+  else
+  {
+    m_link.open(PIXY_DEFAULT_ARGVAL);
+  }
+}
 
 template <class LinkType> int16_t TPixy2<LinkType>::getSync()
 {
@@ -222,7 +235,7 @@ template <class LinkType> int16_t TPixy2<LinkType>::getSync()
       if (j>=4)
       {
 #ifdef PIXY_DEBUG
-        wpi::errs() << "error: no response";
+        wpi::errs() << "\nError: no response";
 #endif		  
         return PIXY_RESULT_ERROR;
       }
@@ -246,7 +259,7 @@ template <class LinkType> int16_t TPixy2<LinkType>::recvPacket()
   if (m_cs)
   {
     //wpi::errs() << "recv 1\n";
-    res = m_link.recv(m_buf, 4);
+    res = m_link.recv(m_buf, 4, NULL);
     if (res<0)
       return res;
 
@@ -255,7 +268,7 @@ template <class LinkType> int16_t TPixy2<LinkType>::recvPacket()
 
     csSerial = *(uint16_t *)&m_buf[2];
 
-    wpi::errs() << "recv 2\n";
+    //wpi::errs() << "recv 2\n";
     res = m_link.recv(m_buf, m_length, &csCalc);
     if (res<0)
       return res;
@@ -264,7 +277,7 @@ template <class LinkType> int16_t TPixy2<LinkType>::recvPacket()
     if (csSerial!=csCalc)
     {
 #ifdef PIXY_DEBUG
-      wpi::errs() << "error: checksum";
+      wpi::errs() << "\nError: checksum";
 #endif
       return PIXY_RESULT_CHECKSUM_ERROR;
     }

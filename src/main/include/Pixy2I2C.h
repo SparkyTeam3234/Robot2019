@@ -33,9 +33,8 @@ public:
       m_addr = PIXY_I2C_DEFAULT_ADDR;
     else
       m_addr = arg;
-    //Wire.begin();
     wire = new frc::I2C(frc::I2C::Port::kOnboard,m_addr);
-    wpi::errs() << (wire->AddressOnly() ? "I2C Open Success" : "I2C Open Success") << "\n";
+    wpi::errs() << (wire->AddressOnly() ? "\nI2C Open Success" : "\nI2C Open Success") << "\n";
 	return 0;
   }
 	
@@ -44,9 +43,9 @@ public:
     delete wire;
   }
     
-  int16_t recv(uint8_t *buf, uint8_t len, uint16_t *cs=NULL)
+  int16_t recv(uint8_t *buf, uint8_t len, uint16_t *cs=NULL, bool debug=false)
   {
-    wpi::errs() << "Pixy2I2C::recv\n";
+    //wpi::errs() << "Pixy2I2C::recv\n";
     uint8_t i, j, n;
     uint8_t *buffer = new uint8_t[len];
     if (cs)
@@ -60,9 +59,19 @@ public:
       // n is the number read -- it most likely won't be equal to len
       //(uint8_t)m_addr,
       //n = !wire->ReadOnly((uint8_t)(len-i),buffer);
-      if (len==4) wpi::errs() << "Reading data from wpi I2C\n";
-      n = !wire->ReadOnly(1,buffer);
-      if (len==4) wpi::errs() << "Read data from wpi I2C\n";
+      if (debug) wpi::errs() << "\nReadOnly";
+      bool success = !wire->ReadOnly(len,buffer);
+      if (success) 
+      {
+        n=len;
+      } 
+      else 
+      {
+        len=-1;
+        wpi::errs() << "\n!!!ERROR IN Wire->ReadOnly!!!";
+        break;
+      }
+      if (debug) wpi::errs() << "...returned\n";
       for (j=0; j<n; j++)
       {		  
         buf[j+i] = *bufferpointer;
@@ -85,19 +94,8 @@ public:
         packet = len-i;
       else 
         packet = PIXY_I2C_MAX_SEND;
-      /*Trace Output
-      int8_t j;
-      uint8_t *bufptr=buf+i;
-      for (j=0;j<packet;j++,bufptr++) {
-        wpi::errs() << (uint16_t) (*bufptr) << "\n";
-      }
-      */
+
       wire->WriteBulk(buf+i, packet);
-      /*
-      Wire.beginTransmission(m_addr);
-      Wire.write(buf+i, packet);
-      Wire.endTransmission();
-      */
     }
     return len;
   }
